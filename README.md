@@ -1,36 +1,121 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Moonthread — Facility Management System
+
+A modern, web-based Facility Management System (FMS) built for non-profit foundations. Moonthread digitises and streamlines facility operations — replacing manual processes with a structured, role-based platform that improves transparency, accountability, and operational efficiency.
+
+## What It Does
+
+Moonthread provides a centralised dashboard for managing every aspect of facility operations:
+
+### 📋 Work Orders & Maintenance
+Submit, track, and manage maintenance requests with urgency levels, category tagging, and status workflows. Staff can submit issues with photos, and managers can approve, assign, and track resolution.
+
+### 📦 Asset & Equipment Tracking
+Maintain a complete inventory of facility assets — from cleaning equipment to office furniture. Track condition, serial numbers, quantities, purchase dates, and capture photos directly from your device camera.
+
+### 🏢 Vendor & Contract Management
+Manage service providers with contact details, ratings, and service categories. Track active contracts with start/end dates, renewal reminders, and contract values.
+
+### 🗓️ Space & Booking Management
+Define facility areas (offices, meeting rooms, common areas) and manage bookings. Staff can reserve spaces with purpose, attendee count, and setup requirements.
+
+### 🧹 Supply Requests
+Cleaning staff and team members can request supplies with itemised lists (item name, quantity, unit). Requests flow through approval workflows before procurement.
+
+### 💰 Expense Tracking
+Record and categorise facility expenditures with approval workflows. Track spending by category (maintenance, cleaning supplies, vendor payments, utilities, equipment).
+
+### 📊 Reports & Analytics
+Visual bar charts for work orders by category, expenses by category, and bookings by space — all computed in real-time from your data.
+
+### ⚙️ Settings & User Management
+Manage users with role-based access (Admin, Facility Manager, Cleaning Supervisor, Staff). Define and configure facility areas.
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Framework** | Next.js 16 (App Router, Turbopack) |
+| **Language** | TypeScript |
+| **Backend / Auth** | Supabase (PostgreSQL, Auth, Row Level Security) |
+| **Styling** | Vanilla CSS with custom design tokens |
+| **Icons** | Lucide React |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 18+
+- A [Supabase](https://supabase.com) project
+
+### 1. Clone & Install
+
+```bash
+git clone https://github.com/woodfur/moonthread.git
+cd moonthread
+npm install
+```
+
+### 2. Configure Environment
+
+Create a `.env.local` file:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+```
+
+### 3. Run Database Migrations
+
+Execute the SQL files in your Supabase dashboard (SQL Editor):
+
+1. `supabase/migrations/001_initial_schema.sql` — Creates all tables, RLS policies, and triggers
+2. `supabase/migrations/002_add_asset_fields.sql` — Adds asset image and quantity fields
+
+### 4. Start Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to access the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/
+│   ├── dashboard/          # All dashboard pages
+│   │   ├── assets/         # Asset management + Add Asset form
+│   │   ├── vendors/        # Vendors & contracts + forms
+│   │   ├── spaces/         # Spaces, bookings + forms
+│   │   ├── work-orders/    # Work order management + form
+│   │   ├── supply-requests/# Supply request management + form
+│   │   ├── expenses/       # Expense tracking + form
+│   │   ├── reports/        # Visual analytics
+│   │   ├── settings/       # Users & areas management
+│   │   └── profile/        # User profile
+│   ├── auth/               # Auth server actions
+│   ├── api/                # API routes (admin user creation)
+│   └── login/              # Login page
+├── components/
+│   ├── layout/             # Sidebar, Header
+│   └── ui/                 # Reusable UI components
+├── lib/
+│   ├── supabase/           # Supabase client, server, middleware
+│   ├── constants.ts        # Labels, mappings
+│   └── utils.ts            # Formatting utilities
+└── types/                  # TypeScript interfaces
+```
 
-## Learn More
+## User Roles
 
-To learn more about Next.js, take a look at the following resources:
+| Role | Access |
+|------|--------|
+| **Admin** | Full access — manage users, approve expenses, configure system |
+| **Facility Manager** | Manage assets, vendors, contracts, work orders |
+| **Cleaning Supervisor** | Submit supply requests, manage cleaning-related work orders |
+| **Staff** | Submit work orders, book spaces, view dashboards |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT

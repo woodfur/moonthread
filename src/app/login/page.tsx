@@ -1,13 +1,41 @@
 'use client';
 
-import { useState } from 'react';
-import { Eye, EyeOff, ArrowRight, Shield, Clock, BarChart3 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { signIn } from '@/app/auth/actions';
+
+const slides = [
+    {
+        image: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=1200&q=80',
+        quote: '"Management is, above all, a practice where art, science, and craft meet."',
+        author: '— Henry Mintzberg',
+    },
+    {
+        image: 'https://images.unsplash.com/photo-1549490349-8643362247b5?w=1200&q=80',
+        quote: '"The art of management is the capacity to handle complexity."',
+        author: '— Peter Drucker',
+    },
+    {
+        image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=80',
+        quote: '"Efficiency is doing things right; effectiveness is doing the right things."',
+        author: '— Peter Drucker',
+    },
+];
 
 export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [activeSlide, setActiveSlide] = useState(0);
+
+    const nextSlide = useCallback(() => {
+        setActiveSlide((prev) => (prev + 1) % slides.length);
+    }, []);
+
+    useEffect(() => {
+        const timer = setInterval(nextSlide, 6000);
+        return () => clearInterval(timer);
+    }, [nextSlide]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -17,12 +45,6 @@ export default function LoginPage() {
         const result = await signIn(formData);
         if (result?.error) { setError(result.error); setLoading(false); }
     };
-
-    const features = [
-        { icon: Shield, text: 'Role-based access with approval workflows' },
-        { icon: Clock, text: 'Real-time tracking from request to completion' },
-        { icon: BarChart3, text: 'Insights & reports for smarter decisions' },
-    ];
 
     return (
         <>
@@ -45,60 +67,89 @@ export default function LoginPage() {
         .login-btn-secondary:hover { background: var(--surface-raised, #F5F5F3); }
         .login-label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary, #6B6B6B); margin-bottom: 6px; }
         .login-error { padding: 12px 14px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; font-size: 13px; color: #DC2626; margin-bottom: 16px; }
-        .feature-item { display: flex; align-items: center; gap: 14px; }
-        .feature-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.1); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; transition: background 0.2s; }
-        .feature-item:hover .feature-icon { background: rgba(255,255,255,0.2); }
         @keyframes spin { to { transform: rotate(360deg); } }
         .spinner { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.15); border-top-color: #1A1A1A; border-radius: 50%; animation: spin 0.6s linear infinite; }
+
+        /* Slider styles */
+        .slide-image {
+          position: absolute; inset: 0;
+          background-size: cover; background-position: center;
+          opacity: 0; transition: opacity 1.2s ease-in-out;
+        }
+        .slide-image.active { opacity: 1; }
+        .slide-dot {
+          width: 8px; height: 8px; border-radius: 50%;
+          background: rgba(255,255,255,0.35);
+          border: none; cursor: pointer; padding: 0;
+          transition: all 0.3s ease;
+        }
+        .slide-dot.active {
+          background: #fff;
+          width: 24px; border-radius: 4px;
+        }
       `}</style>
 
             <div className="login-root">
-                {/* Left Hero Panel — Warm Amber Theme */}
-                <div className="login-hero" style={{
-                    position: 'relative', overflow: 'hidden',
-                    background: 'linear-gradient(135deg, #2A2117 0%, #4A3520 30%, #8B6914 60%, #F6CE71 100%)',
-                }}>
-                    {/* Decorative orbs */}
-                    <div style={{ position: 'absolute', inset: 0 }}>
-                        <div style={{ position: 'absolute', top: '10%', left: '10%', width: '280px', height: '280px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(246,206,113,0.3) 0%, transparent 70%)', opacity: 0.5 }} />
-                        <div style={{ position: 'absolute', bottom: '15%', right: '8%', width: '360px', height: '360px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(246,206,113,0.2) 0%, transparent 70%)', opacity: 0.4 }} />
-                        <div style={{
-                            position: 'absolute', inset: 0,
-                            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0)',
-                            backgroundSize: '40px 40px',
-                        }} />
-                    </div>
+                {/* Left Panel — Image Slider */}
+                <div className="login-hero" style={{ position: 'relative', overflow: 'hidden' }}>
+                    {/* Slide images */}
+                    {slides.map((slide, i) => (
+                        <div
+                            key={i}
+                            className={`slide-image ${i === activeSlide ? 'active' : ''}`}
+                            style={{ backgroundImage: `url(${slide.image})` }}
+                        />
+                    ))}
 
-                    <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '48px', width: '100%' }}>
-                        {/* Logo */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <div style={{ width: 36, height: 36, borderRadius: '10px', background: '#F6CE71', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <span style={{ color: '#1A1A1A', fontSize: '15px', fontWeight: 700 }}>F</span>
+                    {/* Gradient overlay for text legibility */}
+                    <div style={{
+                        position: 'absolute', inset: 0, zIndex: 1,
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.05) 100%)',
+                    }} />
+
+                    {/* Quote overlay */}
+                    <div style={{
+                        position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 2,
+                        padding: '48px', display: 'flex', flexDirection: 'column', gap: '16px',
+                    }}>
+                        {slides.map((slide, i) => (
+                            <div
+                                key={i}
+                                style={{
+                                    position: i === activeSlide ? 'relative' : 'absolute',
+                                    opacity: i === activeSlide ? 1 : 0,
+                                    transform: i === activeSlide ? 'translateY(0)' : 'translateY(12px)',
+                                    transition: 'opacity 0.8s ease, transform 0.8s ease',
+                                    pointerEvents: i === activeSlide ? 'auto' : 'none',
+                                }}
+                            >
+                                <p style={{
+                                    fontSize: '22px', fontWeight: 300, color: '#fff',
+                                    lineHeight: 1.5, letterSpacing: '-0.01em',
+                                    fontStyle: 'italic', maxWidth: '480px',
+                                }}>
+                                    {slide.quote}
+                                </p>
+                                <p style={{
+                                    fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.6)',
+                                    marginTop: '12px', letterSpacing: '0.02em',
+                                }}>
+                                    {slide.author}
+                                </p>
                             </div>
-                            <span style={{ color: '#FFF8E7', fontSize: '17px', fontWeight: 600, letterSpacing: '-0.01em' }}>Facility Management</span>
-                        </div>
+                        ))}
 
-                        {/* Headline */}
-                        <div style={{ maxWidth: '480px' }}>
-                            <h1 style={{ fontSize: '38px', fontWeight: 700, color: '#FFF8E7', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: '16px' }}>
-                                Streamline your facility operations
-                            </h1>
-                            <p style={{ fontSize: '16px', color: 'rgba(255,248,231,0.7)', lineHeight: 1.6, marginBottom: '40px' }}>
-                                Manage work orders, assets, vendors, and spaces — all in one unified platform built for non-profit excellence.
-                            </p>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                {features.map((f, i) => (
-                                    <div key={i} className="feature-item">
-                                        <div className="feature-icon">
-                                            <f.icon style={{ width: 18, height: 18, color: '#F6CE71' }} />
-                                        </div>
-                                        <span style={{ fontSize: '14px', fontWeight: 500, color: 'rgba(255,248,231,0.85)' }}>{f.text}</span>
-                                    </div>
-                                ))}
-                            </div>
+                        {/* Dot navigation */}
+                        <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
+                            {slides.map((_, i) => (
+                                <button
+                                    key={i}
+                                    className={`slide-dot ${i === activeSlide ? 'active' : ''}`}
+                                    onClick={() => setActiveSlide(i)}
+                                    aria-label={`Go to slide ${i + 1}`}
+                                />
+                            ))}
                         </div>
-
-                        <p style={{ fontSize: '12px', color: 'rgba(255,248,231,0.3)' }}>© 2026 FMS · Built for non-profit foundations</p>
                     </div>
                 </div>
 
@@ -106,10 +157,7 @@ export default function LoginPage() {
                 <div className="login-form-panel">
                     <div className="login-card">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '32px' }}>
-                            <div style={{ width: 32, height: 32, borderRadius: '8px', background: '#F6CE71', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <span style={{ color: '#1A1A1A', fontSize: '14px', fontWeight: 700 }}>F</span>
-                            </div>
-                            <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary, #1A1A1A)' }}>FMS</span>
+
                         </div>
 
                         <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary, #1A1A1A)', letterSpacing: '-0.02em' }}>Welcome back</h2>

@@ -8,7 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'FMS — Facility Management System',
+  title: 'Moonthread',
   description:
     'Facility Management System for non-profit foundation operations. Manage work orders, assets, vendors, spaces, supplies, and expenses.',
 };

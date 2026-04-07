@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, AlertTriangle, Search, Filter } from 'lucide-react';
+import RoleGate from '@/components/auth/RoleGate';
 import { createClient } from '@/lib/supabase/client';
 import StatusBadge from '@/components/ui/StatusBadge';
 import EmptyState from '@/components/ui/EmptyState';
@@ -19,6 +21,7 @@ const URGENCY_VARIANT: Record<string, 'accent' | 'success' | 'warning' | 'danger
 };
 
 export default function WorkOrdersPage() {
+    const router = useRouter();
     const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -54,9 +57,11 @@ export default function WorkOrdersPage() {
                     <h1>Work Orders</h1>
                     <p>Manage maintenance requests and track progress</p>
                 </div>
-                <Link href="/dashboard/work-orders/new" className="btn btn-primary" style={{ textDecoration: 'none' }}>
-                    <Plus style={{ width: 16, height: 16 }} /> New Work Order
-                </Link>
+                <RoleGate allowedRoles={['admin', 'facility_manager', 'staff']}>
+                    <Link href="/dashboard/work-orders/new" className="btn btn-primary" style={{ textDecoration: 'none' }}>
+                        <Plus style={{ width: 16, height: 16 }} /> New Work Order
+                    </Link>
+                </RoleGate>
             </div>
 
             {/* Filters */}
@@ -89,13 +94,13 @@ export default function WorkOrdersPage() {
             {/* Table */}
             <div className="card" style={{ overflow: 'hidden' }}>
                 {filtered.length > 0 ? (
-                    <table className="data-table">
+                    <div className="table-responsive"><table className="data-table">
                         <thead>
                             <tr><th>ID</th><th>Description</th><th>Location</th><th>Category</th><th>Urgency</th><th>Status</th><th>Submitted</th></tr>
                         </thead>
                         <tbody>
                             {filtered.map((wo) => (
-                                <tr key={wo.id} style={{ cursor: 'pointer' }}>
+                                <tr key={wo.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/dashboard/work-orders/${wo.id}`)}>
                                     <td><span style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: 500, color: 'var(--accent-muted)' }}>{wo.work_order_number}</span></td>
                                     <td>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -114,7 +119,7 @@ export default function WorkOrdersPage() {
                                 </tr>
                             ))}
                         </tbody>
-                    </table>
+                    </table></div>
                 ) : (
                     <EmptyState title="No work orders found" description={search || statusFilter ? 'Try adjusting your filters.' : 'Submit your first work order to get started.'} />
                 )}

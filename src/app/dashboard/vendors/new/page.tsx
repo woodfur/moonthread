@@ -82,7 +82,7 @@ export default function NewVendorPage() {
                     <input name="company_name" required className="input" placeholder="e.g. Acme Cleaning Services" />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div className="form-row">
                     <div>
                         <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>Service Category *</label>
                         <select name="service_category" required className="input">
@@ -106,17 +106,17 @@ export default function NewVendorPage() {
                     <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '14px' }}>Primary Contact</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                         <div>
-                            <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>Contact Name</label>
-                            <input name="contact_name" className="input" placeholder="e.g. John Doe" />
+                            <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>Contact Name *</label>
+                            <input name="contact_name" required className="input" placeholder="e.g. John Doe" />
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                        <div className="form-row">
                             <div>
-                                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>Phone</label>
-                                <input name="contact_phone" type="tel" className="input" placeholder="+1 555-0123" />
+                                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>Phone *</label>
+                                <input name="contact_phone" type="tel" required className="input" placeholder="+232 79 111 222" />
                             </div>
                             <div>
                                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>Email</label>
-                                <input name="contact_email" type="email" className="input" placeholder="john@acme.com" />
+                                <input name="contact_email" type="email" className="input" placeholder="john@lg.com" />
                             </div>
                         </div>
                     </div>

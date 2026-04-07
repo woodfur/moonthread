@@ -76,7 +76,7 @@ export default function NewBookingPage() {
                     <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>Purpose *</label>
                     <input name="purpose" required className="input" placeholder="e.g. Team meeting, training session" />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
+                <div className="grid-3" style={{ gap: '14px' }}>
                     <div>
                         <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>Date *</label>
                         <input name="booking_date" type="date" required className="input" />

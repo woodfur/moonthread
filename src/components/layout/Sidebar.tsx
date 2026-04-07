@@ -5,39 +5,27 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
     LayoutDashboard, Wrench, Package, Building2,
     CalendarDays, ShoppingCart, Receipt, BarChart3,
-    Settings, ChevronLeft, LogOut, UserCircle,
+    Settings, ChevronLeft, LogOut, UserCircle, Droplets, X,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { NAV_ITEMS } from '@/lib/constants';
 import { getInitials } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
-import type { User } from '@/types';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { useMobileMenu } from '@/app/dashboard/layout';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
     LayoutDashboard, Wrench, Package, Building2,
-    CalendarDays, ShoppingCart, Receipt, BarChart3, Settings,
+    CalendarDays, ShoppingCart, Receipt, BarChart3, Settings, Droplets,
 };
 
 export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
     const [collapsed, setCollapsed] = useState(false);
-    const [user, setUser] = useState<User | null>(null);
     const [loggingOut, setLoggingOut] = useState(false);
-
-    useEffect(() => {
-        const supabase = createClient();
-        supabase.auth.getUser().then(async ({ data: { user: authUser } }) => {
-            if (authUser) {
-                const { data } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('id', authUser.id)
-                    .single();
-                if (data) setUser(data as User);
-            }
-        });
-    }, []);
+    const { user, role } = useAuth();
+    const { isOpen: mobileOpen, close: closeMobile } = useMobileMenu();
 
     const handleLogout = async () => {
         setLoggingOut(true);
@@ -47,44 +35,17 @@ export default function Sidebar() {
     };
 
     const visibleItems = NAV_ITEMS.filter(
-        (item) => !item.roles || !user || item.roles.includes(user.role)
+        (item) => !item.roles || item.roles.includes(role)
     );
 
     return (
         <aside
-            style={{
-                width: collapsed ? 'var(--sidebar-collapsed)' : 'var(--sidebar-width)',
-                minHeight: '100vh',
-                background: 'var(--surface)',
-                borderRight: '1px solid var(--border)',
-                display: 'flex',
-                flexDirection: 'column',
-                transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                zIndex: 40,
-                overflow: 'hidden',
-            }}
+            className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''} ${mobileOpen ? 'sidebar-mobile-open' : ''}`}
         >
-            {/* Logo + Collapse */}
-            <div style={{
-                padding: collapsed ? '20px 0' : '20px 20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: collapsed ? 'center' : 'space-between',
-                borderBottom: '1px solid var(--border-light)',
-                minHeight: '64px',
-            }}>
+            {/* Logo + Collapse / Close */}
+            <div className="sidebar-header">
                 {!collapsed && (
                     <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-                        <div style={{
-                            width: 32, height: 32, borderRadius: 'var(--radius-sm)',
-                            background: 'var(--accent)', display: 'flex',
-                            alignItems: 'center', justifyContent: 'center',
-                        }}>
-                            {/* <span style={{ color: 'var(--accent-text)', fontSize: '14px', fontWeight: 700 }}>F</span> */}
-                        </div>
                         <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
                             MOONTHREAD
                         </span>
@@ -96,24 +57,25 @@ export default function Sidebar() {
                         background: 'var(--accent)', display: 'flex',
                         alignItems: 'center', justifyContent: 'center',
                     }}>
-                        <span style={{ color: 'var(--accent-text)', fontSize: '14px', fontWeight: 700 }}>F</span>
+                        <span style={{ color: 'var(--accent-text)', fontSize: '14px', fontWeight: 700 }}>M</span>
                     </div>
                 )}
+
+                {/* Desktop: collapse button */}
                 <button
                     onClick={() => setCollapsed(!collapsed)}
                     title={collapsed ? 'Expand' : 'Collapse'}
-                    style={{
-                        width: 28, height: 28, borderRadius: 'var(--radius-sm)',
-                        background: 'transparent', border: 'none', cursor: 'pointer',
-                        display: collapsed ? 'none' : 'flex',
-                        alignItems: 'center', justifyContent: 'center',
-                        color: 'var(--text-muted)',
-                        transition: 'all var(--duration) var(--ease)',
-                    }}
-                    onMouseOver={(e) => { e.currentTarget.style.background = 'var(--surface-raised)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
-                    onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
+                    className="sidebar-collapse-btn"
                 >
                     <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                {/* Mobile: close button */}
+                <button
+                    onClick={closeMobile}
+                    className="sidebar-close-btn"
+                >
+                    <X style={{ width: 20, height: 20 }} />
                 </button>
             </div>
 
@@ -128,6 +90,7 @@ export default function Sidebar() {
                             <Link
                                 key={item.href}
                                 href={item.href}
+                                onClick={closeMobile}
                                 title={collapsed ? item.label : undefined}
                                 style={{
                                     display: 'flex',
@@ -192,6 +155,7 @@ export default function Sidebar() {
                 {user && !collapsed && (
                     <Link
                         href="/dashboard/profile"
+                        onClick={closeMobile}
                         style={{
                             display: 'flex', alignItems: 'center', gap: '10px',
                             padding: '10px 12px', marginTop: '4px',

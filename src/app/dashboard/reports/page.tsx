@@ -94,7 +94,7 @@ export default function ReportsPage() {
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+            <div className="form-row" style={{ marginBottom: '16px' }}>
                 {renderChart('Work Orders by Category', <BarChart3 style={{ width: 16, height: 16, color: 'var(--accent-muted)' }} />, woByCategory, maxWO)}
                 {renderChart('Expenses by Category', <TrendingUp style={{ width: 16, height: 16, color: '#22C55E' }} />, expenseByCategory, maxExp, formatCurrency)}
             </div>

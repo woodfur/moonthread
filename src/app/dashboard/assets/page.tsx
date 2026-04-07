@@ -1,38 +1,35 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Search, Image as ImageIcon } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import StatusBadge from '@/components/ui/StatusBadge';
 import EmptyState from '@/components/ui/EmptyState';
 import DeleteAssetButton from './DeleteAssetButton';
+import RoleGate from '@/components/auth/RoleGate';
+import { useAuth } from '@/components/auth/AuthProvider';
 import { ASSET_CATEGORY_LABELS, ASSET_CONDITION_LABELS } from '@/lib/constants';
 import { formatDate } from '@/lib/utils';
-import type { Asset, AssetCategory, UserRole } from '@/types';
+import type { Asset, AssetCategory } from '@/types';
 
 const CONDITION_VARIANT: Record<string, 'success' | 'warning' | 'danger' | 'neutral' | 'accent'> = {
     excellent: 'success', good: 'accent', fair: 'warning', poor: 'danger', decommissioned: 'neutral',
 };
 
 export default function AssetsPage() {
+    const router = useRouter();
     const [assets, setAssets] = useState<Asset[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [categoryFilter, setCategoryFilter] = useState<AssetCategory | ''>('');
-    const [userRole, setUserRole] = useState<UserRole>('staff');
+    const { role } = useAuth();
 
     useEffect(() => {
         const supabase = createClient();
 
         async function fetchData() {
-            // Get user role
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single();
-                setUserRole((profile?.role || user.user_metadata?.role || 'staff') as UserRole);
-            }
-
             // Get assets
             const { data } = await supabase.from('assets').select('*, area:facility_areas!location_area(name)').order('name');
             if (data) setAssets(data as Asset[]);
@@ -41,8 +38,8 @@ export default function AssetsPage() {
         fetchData();
     }, []);
 
-    const canAdd = ['admin', 'facility_manager', 'cleaning_supervisor'].includes(userRole);
-    const canDelete = ['admin', 'facility_manager'].includes(userRole);
+    const canAdd = ['admin', 'facility_manager', 'cleaning_supervisor'].includes(role);
+    const canDelete = ['admin', 'facility_manager'].includes(role);
 
     const filtered = assets.filter((a) => {
         if (search && !a.name.toLowerCase().includes(search.toLowerCase()) && !a.serial_number?.toLowerCase().includes(search.toLowerCase())) return false;
@@ -85,9 +82,9 @@ export default function AssetsPage() {
 
             {/* Asset Cards */}
             {filtered.length > 0 ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                <div className="grid-3">
                     {filtered.map((asset) => (
-                        <div key={asset.id} className="card" style={{ overflow: 'hidden' }}>
+                        <div key={asset.id} className="card" style={{ overflow: 'hidden', cursor: 'pointer' }} onClick={() => router.push(`/dashboard/assets/${asset.id}`)}>
                             {/* Asset Image */}
                             <div style={{
                                 height: '130px', background: 'var(--surface-raised)',

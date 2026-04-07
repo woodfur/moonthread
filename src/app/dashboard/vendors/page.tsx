@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Star, Search, Phone, Mail, MapPin, Globe, Plus } from 'lucide-react';
+import RoleGate from '@/components/auth/RoleGate';
 import { createClient } from '@/lib/supabase/client';
 import StatusBadge from '@/components/ui/StatusBadge';
 import EmptyState from '@/components/ui/EmptyState';
@@ -10,6 +12,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import type { Vendor, Contract } from '@/types';
 
 export default function VendorsPage() {
+    const router = useRouter();
     const [vendors, setVendors] = useState<Vendor[]>([]);
     const [contracts, setContracts] = useState<Contract[]>([]);
     const [loading, setLoading] = useState(true);
@@ -49,14 +52,16 @@ export default function VendorsPage() {
                     <h1>Vendors & Contracts</h1>
                     <p>Manage service providers and agreements</p>
                 </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                    <Link href="/dashboard/vendors/new" className="btn btn-primary" style={{ textDecoration: 'none' }}>
-                        <Plus style={{ width: 16, height: 16 }} /> Add Vendor
-                    </Link>
-                    <Link href="/dashboard/vendors/contracts/new" className="btn btn-outline" style={{ textDecoration: 'none' }}>
-                        <Plus style={{ width: 16, height: 16 }} /> Add Contract
-                    </Link>
-                </div>
+                <RoleGate allowedRoles={['admin', 'facility_manager']}>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <Link href="/dashboard/vendors/new" className="btn btn-primary" style={{ textDecoration: 'none' }}>
+                            <Plus style={{ width: 16, height: 16 }} /> Add Vendor
+                        </Link>
+                        <Link href="/dashboard/vendors/contracts/new" className="btn btn-outline" style={{ textDecoration: 'none' }}>
+                            <Plus style={{ width: 16, height: 16 }} /> Add Contract
+                        </Link>
+                    </div>
+                </RoleGate>
             </div>
 
             {/* Tabs */}
@@ -80,9 +85,9 @@ export default function VendorsPage() {
 
             {tab === 'vendors' ? (
                 filteredVendors.length > 0 ? (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+                    <div className="grid-2">
                         {filteredVendors.map((v) => (
-                            <div key={v.id} className="card card-pad">
+                            <div key={v.id} className="card card-pad" style={{ cursor: 'pointer' }} onClick={() => router.push(`/dashboard/vendors/${v.id}`)}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '14px' }}>
                                     <div>
                                         <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>{v.company_name}</div>
@@ -110,11 +115,11 @@ export default function VendorsPage() {
             ) : (
                 filteredContracts.length > 0 ? (
                     <div className="card" style={{ overflow: 'hidden' }}>
-                        <table className="data-table">
+                        <div className="table-responsive"><table className="data-table">
                             <thead><tr><th>Title</th><th>Vendor</th><th>Value</th><th>Start</th><th>End</th><th>Status</th></tr></thead>
                             <tbody>
                                 {filteredContracts.map((c) => (
-                                    <tr key={c.id}>
+                                    <tr key={c.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/dashboard/vendors/${c.vendor_id}`)}>
                                         <td style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{c.service_description}</td>
                                         <td style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{c.vendor?.company_name}</td>
                                         <td style={{ fontWeight: 500 }}>{formatCurrency(c.value)}</td>
@@ -124,7 +129,7 @@ export default function VendorsPage() {
                                     </tr>
                                 ))}
                             </tbody>
-                        </table>
+                        </table></div>
                     </div>
                 ) : <div className="card"><EmptyState title="No contracts found" /></div>
             )}

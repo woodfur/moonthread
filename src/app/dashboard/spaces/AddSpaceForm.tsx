@@ -50,11 +50,11 @@ export default function AddSpaceForm() {
             <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '14px' }}>Add New Space</h3>
             {error && <div style={{ padding: '10px 12px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', fontSize: '12px', color: '#DC2626', marginBottom: '12px' }}>{error}</div>}
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="form-row">
                     <input name="name" required className="input" placeholder="Space name" />
                     <input name="type" required className="input" placeholder="Type (e.g. Event / Assembly)" />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
+                <div className="form-row" style={{ gridTemplateColumns: '1fr 2fr' }}>
                     <input name="capacity" type="number" min="0" className="input" placeholder="Capacity" />
                     <input name="key_features" className="input" placeholder="Key features (comma separated)" />
                 </div>

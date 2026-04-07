@@ -1,29 +1,28 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { MapPin, Users, Calendar, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import StatusBadge from '@/components/ui/StatusBadge';
 import EmptyState from '@/components/ui/EmptyState';
 import AddSpaceForm from './AddSpaceForm';
+import RoleGate from '@/components/auth/RoleGate';
+import { useAuth } from '@/components/auth/AuthProvider';
 import { formatDate } from '@/lib/utils';
-import type { FacilityArea, SpaceBooking, UserRole } from '@/types';
+import type { FacilityArea, SpaceBooking } from '@/types';
 
 export default function SpacesPage() {
+    const router = useRouter();
     const [areas, setAreas] = useState<FacilityArea[]>([]);
     const [bookings, setBookings] = useState<SpaceBooking[]>([]);
     const [loading, setLoading] = useState(true);
-    const [userRole, setUserRole] = useState<UserRole>('staff');
+    const { role } = useAuth();
 
     useEffect(() => {
         const supabase = createClient();
         async function fetchData() {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                const { data: p } = await supabase.from('users').select('role').eq('id', user.id).single();
-                setUserRole((p?.role || user.user_metadata?.role || 'staff') as UserRole);
-            }
             const { data: a } = await supabase.from('facility_areas').select('*').order('name');
             const { data: b } = await supabase.from('space_bookings').select('*, area:facility_areas!facility_area_id(name), requester:users!requested_by(full_name)').order('booking_date', { ascending: false });
             if (a) setAreas(a as FacilityArea[]);
@@ -33,7 +32,7 @@ export default function SpacesPage() {
         fetchData();
     }, []);
 
-    const isAdmin = userRole === 'admin';
+    const isAdmin = role === 'admin';
     const BOOKING_VARIANT: Record<string, 'success' | 'warning' | 'danger' | 'neutral' | 'accent'> = {
         pending: 'warning', approved: 'success', denied: 'danger', cancelled: 'neutral',
     };
@@ -52,9 +51,11 @@ export default function SpacesPage() {
                     <p>Manage facility areas and booking requests</p>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                    <Link href="/dashboard/spaces/new" className="btn btn-primary" style={{ textDecoration: 'none' }}>
-                        <Plus style={{ width: 16, height: 16 }} /> Add Area
-                    </Link>
+                    <RoleGate allowedRoles={['admin', 'facility_manager']}>
+                        <Link href="/dashboard/spaces/new" className="btn btn-primary" style={{ textDecoration: 'none' }}>
+                            <Plus style={{ width: 16, height: 16 }} /> Add Area
+                        </Link>
+                    </RoleGate>
                     <Link href="/dashboard/spaces/bookings/new" className="btn btn-outline" style={{ textDecoration: 'none' }}>
                         <Plus style={{ width: 16, height: 16 }} /> Add Booking
                     </Link>
@@ -64,7 +65,7 @@ export default function SpacesPage() {
             {/* Facility Areas */}
             <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '14px' }}>Facility Areas</h2>
             {areas.length > 0 ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
+                <div className="grid-3" style={{ marginBottom: '24px' }}>
                     {areas.map((area) => (
                         <div key={area.id} className="card" style={{ overflow: 'hidden' }}>
                             <div style={{
@@ -100,11 +101,11 @@ export default function SpacesPage() {
             <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '14px', marginTop: '24px' }}>Bookings</h2>
             <div className="card" style={{ overflow: 'hidden' }}>
                 {bookings.length > 0 ? (
-                    <table className="data-table">
+                    <div className="table-responsive"><table className="data-table">
                         <thead><tr><th>Event</th><th>Space</th><th>Date</th><th>Time</th><th>Requested By</th><th>Status</th></tr></thead>
                         <tbody>
                             {bookings.map((b) => (
-                                <tr key={b.id}>
+                                <tr key={b.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/dashboard/spaces/bookings/${b.id}`)}>
                                     <td style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{b.purpose}</td>
                                     <td style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{b.area?.name}</td>
                                     <td style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{formatDate(b.booking_date)}</td>
@@ -114,7 +115,7 @@ export default function SpacesPage() {
                                 </tr>
                             ))}
                         </tbody>
-                    </table>
+                    </table></div>
                 ) : (
                     <EmptyState title="No bookings yet" />
                 )}

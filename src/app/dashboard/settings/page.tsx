@@ -1,32 +1,27 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { UserPlus, Settings2, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import StatusBadge from '@/components/ui/StatusBadge';
 import EmptyState from '@/components/ui/EmptyState';
 import AddUserForm from './AddUserForm';
 import { ROLE_LABELS } from '@/lib/constants';
-import type { User, FacilityArea, UserRole } from '@/types';
+import { useAuth } from '@/components/auth/AuthProvider';
+import type { User, FacilityArea } from '@/types';
 
 export default function SettingsPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [areas, setAreas] = useState<FacilityArea[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isAdmin, setIsAdmin] = useState(false);
+    const { role } = useAuth();
+    const isAdmin = role === 'admin';
     const [tab, setTab] = useState<'users' | 'areas'>('users');
 
     useEffect(() => {
         const supabase = createClient();
         async function fetchData() {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                const { data: p } = await supabase.from('users').select('role').eq('id', user.id).single();
-                const role = (p?.role || user.user_metadata?.role || 'staff') as UserRole;
-                setIsAdmin(role === 'admin');
-            }
             const { data: u } = await supabase.from('users').select('*').order('full_name');
             const { data: a } = await supabase.from('facility_areas').select('*').order('name');
             if (u) setUsers(u as User[]);
@@ -81,7 +76,7 @@ export default function SettingsPage() {
                     {isAdmin && <AddUserForm />}
                     <div className="card" style={{ overflow: 'hidden', marginTop: '16px' }}>
                         {users.length > 0 ? (
-                            <table className="data-table">
+                            <div className="table-responsive"><table className="data-table">
                                 <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th></tr></thead>
                                 <tbody>
                                     {users.map((u) => (
@@ -102,7 +97,7 @@ export default function SettingsPage() {
                                         </tr>
                                     ))}
                                 </tbody>
-                            </table>
+                            </table></div>
                         ) : (
                             <EmptyState title="No users found" />
                         )}
@@ -113,7 +108,7 @@ export default function SettingsPage() {
             {tab === 'areas' && (
                 <div className="card" style={{ overflow: 'hidden' }}>
                     {areas.length > 0 ? (
-                        <table className="data-table">
+                        <div className="table-responsive"><table className="data-table">
                             <thead><tr><th>Name</th><th>Type</th><th>Capacity</th><th>Bookable</th></tr></thead>
                             <tbody>
                                 {areas.map((a) => (
@@ -125,7 +120,7 @@ export default function SettingsPage() {
                                     </tr>
                                 ))}
                             </tbody>
-                        </table>
+                        </table></div>
                     ) : (
                         <EmptyState title="No facility areas defined" />
                     )}

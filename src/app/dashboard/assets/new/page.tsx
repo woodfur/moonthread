@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Camera, X } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { ASSET_CATEGORY_LABELS } from '@/lib/constants';
-import type { AssetCategory, AssetCondition } from '@/types';
+import type { AssetCategory, AssetCondition, FacilityArea } from '@/types';
 
 export default function NewAssetPage() {
     const router = useRouter();
@@ -14,7 +14,15 @@ export default function NewAssetPage() {
     const [error, setError] = useState<string | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [photoFile, setPhotoFile] = useState<File | null>(null);
+    const [areas, setAreas] = useState<FacilityArea[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        const supabase = createClient();
+        supabase.from('facility_areas').select('*').order('name').then(({ data }) => {
+            if (data) setAreas(data as FacilityArea[]);
+        });
+    }, []);
 
     const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -34,6 +42,7 @@ export default function NewAssetPage() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (!photoFile) { setError('Please add a photo of the asset.'); return; }
         setSaving(true);
         setError(null);
 
@@ -113,7 +122,7 @@ export default function NewAssetPage() {
                     <input name="name" required className="input" placeholder="e.g. Industrial Floor Scrubber" />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div className="form-row">
                     <div>
                         <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px', display: 'block' }}>Category *</label>
                         <select name="category" required className="input">
@@ -129,9 +138,17 @@ export default function NewAssetPage() {
                     </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div>
+                    <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px', display: 'block' }}>Location / Area</label>
+                    <select name="location_area" className="input">
+                        <option value="">Select area (optional)</option>
+                        {areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                    </select>
+                </div>
+
+                <div className="form-row">
                     <div>
-                        <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px', display: 'block' }}>Serial Number</label>
+                        <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px', display: 'block' }}>Serial Number <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: '11px' }}>(optional)</span></label>
                         <input name="serial_number" className="input" placeholder="e.g. CLN-2023-008" />
                     </div>
                     <div>
@@ -141,13 +158,13 @@ export default function NewAssetPage() {
                 </div>
 
                 <div>
-                    <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px', display: 'block' }}>Purchase Date</label>
+                    <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px', display: 'block' }}>Purchase Date <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: '11px' }}>(optional)</span></label>
                     <input name="purchase_date" type="date" className="input" />
                 </div>
 
                 {/* Photo Capture */}
                 <div>
-                    <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px', display: 'block' }}>Photo</label>
+                    <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px', display: 'block' }}>Photo *</label>
                     <input
                         ref={fileInputRef}
                         type="file"

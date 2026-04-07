@@ -103,12 +103,10 @@ export default function DashboardPage() {
     return (
         <div>
             {/* Page Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '28px' }}>
-                <div>
-                    <h1 style={{ fontSize: '28px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
-                        Overview
-                    </h1>
-                    <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            <div className="page-header">
+                <div className="page-header-info">
+                    <h1>Overview</h1>
+                    <p>
                         Hi {userName.split(' ')[0] || 'there'} 👋 — Welcome Back
                     </p>
                 </div>
@@ -151,14 +149,14 @@ export default function DashboardPage() {
             </div>
 
             {/* Stat Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
+            <div className="grid-3" style={{ marginBottom: '24px' }}>
                 <StatCard icon={<Wrench style={{ width: 18, height: 18, color: '#D4A843' }} />} iconBg="var(--accent-light)" label="Open Work Orders" value={stats.open_work_orders} />
                 <StatCard icon={<ClipboardCheck style={{ width: 18, height: 18, color: '#22C55E' }} />} iconBg="var(--success-light)" label="Pending Approvals" value={stats.pending_approvals} />
                 <StatCard icon={<DollarSign style={{ width: 18, height: 18, color: '#F59E0B' }} />} iconBg="var(--warning-light)" label="Monthly Spend" value={formatCurrency(stats.monthly_spend)} />
             </div>
 
             {/* Quick Actions */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px' }}>
+            <div className="grid-3" style={{ marginBottom: '24px', gap: '12px' }}>
                 {[
                     { icon: Wrench, label: 'New Work Order', href: '/dashboard/work-orders/new', color: 'var(--accent)' },
                     { icon: Clock, label: 'View Pending', href: '/dashboard/work-orders', color: '#8B5CF6' },
@@ -192,23 +190,25 @@ export default function DashboardPage() {
                     }}>View All <ArrowUpRight style={{ width: 13, height: 13 }} /></a>
                 </div>
                 {recentWOs.length > 0 ? (
-                    <table className="data-table">
-                        <thead><tr><th>ID</th><th>Description</th><th>Category</th><th>Status</th><th>Submitted</th></tr></thead>
-                        <tbody>
-                            {recentWOs.map((wo) => (
-                                <tr key={wo.id}>
-                                    <td><span style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: 500, color: 'var(--accent-muted)' }}>{wo.work_order_number}</span></td>
-                                    <td>
-                                        <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>{wo.description}</div>
-                                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '1px' }}>by {wo.submitter?.full_name}</div>
-                                    </td>
-                                    <td style={{ fontSize: '13px', color: 'var(--text-secondary)', textTransform: 'capitalize' }}>{wo.category.replace('_', ' ')}</td>
-                                    <td><StatusBadge label={WORK_ORDER_STATUS_LABELS[wo.status]} variant={STATUS_VARIANT[wo.status] || 'neutral'} /></td>
-                                    <td style={{ fontSize: '12px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{formatRelativeTime(wo.created_at)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    <div className="table-responsive">
+                        <table className="data-table">
+                            <thead><tr><th>ID</th><th>Description</th><th>Category</th><th>Status</th><th>Submitted</th></tr></thead>
+                            <tbody>
+                                {recentWOs.map((wo) => (
+                                    <tr key={wo.id}>
+                                        <td><span style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: 500, color: 'var(--accent-muted)' }}>{wo.work_order_number}</span></td>
+                                        <td>
+                                            <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>{wo.description}</div>
+                                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '1px' }}>by {wo.submitter?.full_name}</div>
+                                        </td>
+                                        <td style={{ fontSize: '13px', color: 'var(--text-secondary)', textTransform: 'capitalize' }}>{wo.category.replace('_', ' ')}</td>
+                                        <td><StatusBadge label={WORK_ORDER_STATUS_LABELS[wo.status]} variant={STATUS_VARIANT[wo.status] || 'neutral'} /></td>
+                                        <td style={{ fontSize: '12px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{formatRelativeTime(wo.created_at)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 ) : (
                     <div style={{ padding: '48px', textAlign: 'center' }}>
                         <CheckCircle style={{ width: 32, height: 32, color: 'var(--border)', margin: '0 auto 12px' }} />

@@ -72,7 +72,7 @@ export const MOCK_BOOKINGS: SpaceBooking[] = [
 // --- Mock Supply Requests ---
 export const MOCK_SUPPLY_REQUESTS: SupplyRequest[] = [
     {
-        id: 'sr1', submitted_by: '3', area_of_use: 'a2', priority: 'routine', status: 'approved', approved_by: '2', created_at: '2026-02-15T08:00:00Z', updated_at: '2026-02-16T10:00:00Z', submitter: MOCK_USERS[2], area: MOCK_AREAS[1], items: [
+        id: 'sr1', submitted_by: '3', area_of_use: 'a2', priority: 'low', status: 'approved', approved_by: '2', created_at: '2026-02-15T08:00:00Z', updated_at: '2026-02-16T10:00:00Z', submitter: MOCK_USERS[2], area: MOCK_AREAS[1], items: [
             { id: 'si1', supply_request_id: 'sr1', item_name: 'Floor cleaner concentrate', quantity: 10, unit: 'litres', is_approved: true },
             { id: 'si2', supply_request_id: 'sr1', item_name: 'Microfibre cloths', quantity: 50, unit: 'pieces', is_approved: true },
         ]

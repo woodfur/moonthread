@@ -10,6 +10,7 @@ import {
     ExpenseCategory,
     ExpenseStatus,
     UserRole,
+    ConsumableCategory,
 } from '@/types';
 
 // --- Status label maps ---
@@ -156,6 +157,15 @@ export const ROLE_LABELS: Record<UserRole, string> = {
     staff: 'Internal Staff',
 };
 
+export const CONSUMABLE_CATEGORY_LABELS: Record<ConsumableCategory, string> = {
+    water: 'Water',
+    cleaning: 'Cleaning',
+    office: 'Office',
+    kitchen: 'Kitchen',
+    hygiene: 'Hygiene',
+    other: 'Other',
+};
+
 // --- Navigation links ---
 
 export interface NavItem {
@@ -173,7 +183,65 @@ export const NAV_ITEMS: NavItem[] = [
     { label: 'Vendors', href: '/dashboard/vendors', icon: 'Building2', roles: ['admin', 'facility_manager'] },
     { label: 'Spaces', href: '/dashboard/spaces', icon: 'CalendarDays', roles: ['admin', 'facility_manager', 'staff'] },
     { label: 'Supply Requests', href: '/dashboard/supply-requests', icon: 'ShoppingCart', roles: ['admin', 'facility_manager', 'cleaning_supervisor'] },
+    { label: 'Consumption', href: '/dashboard/consumption', icon: 'Droplets', roles: ['admin', 'facility_manager', 'cleaning_supervisor', 'staff'] },
     { label: 'Expenses', href: '/dashboard/expenses', icon: 'Receipt', roles: ['admin', 'facility_manager', 'cleaning_supervisor'] },
     { label: 'Reports', href: '/dashboard/reports', icon: 'BarChart3', roles: ['admin', 'facility_manager'] },
     { label: 'Settings', href: '/dashboard/settings', icon: 'Settings', roles: ['admin'] },
 ];
+
+// --- Route permissions (extends NAV_ITEMS to cover sub-routes) ---
+
+export const ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
+    // Dashboard root — everyone
+    '/dashboard': ['admin', 'facility_manager', 'cleaning_supervisor', 'staff'],
+    '/dashboard/profile': ['admin', 'facility_manager', 'cleaning_supervisor', 'staff'],
+
+    // Work Orders
+    '/dashboard/work-orders': ['admin', 'facility_manager', 'staff'],
+    '/dashboard/work-orders/new': ['admin', 'facility_manager', 'staff'],
+    '/dashboard/work-orders/[id]': ['admin', 'facility_manager', 'staff'],
+    '/dashboard/work-orders/[id]/edit': ['admin', 'facility_manager'],
+
+    // Assets
+    '/dashboard/assets': ['admin', 'facility_manager', 'cleaning_supervisor'],
+    '/dashboard/assets/new': ['admin', 'facility_manager', 'cleaning_supervisor'],
+    '/dashboard/assets/[id]': ['admin', 'facility_manager', 'cleaning_supervisor'],
+    '/dashboard/assets/[id]/edit': ['admin', 'facility_manager'],
+
+    // Vendors
+    '/dashboard/vendors': ['admin', 'facility_manager'],
+    '/dashboard/vendors/new': ['admin', 'facility_manager'],
+    '/dashboard/vendors/[id]': ['admin', 'facility_manager'],
+    '/dashboard/vendors/[id]/edit': ['admin', 'facility_manager'],
+    '/dashboard/vendors/contracts/new': ['admin', 'facility_manager'],
+
+    // Spaces
+    '/dashboard/spaces': ['admin', 'facility_manager', 'staff'],
+    '/dashboard/spaces/new': ['admin', 'facility_manager'],
+    '/dashboard/spaces/bookings/new': ['admin', 'facility_manager', 'staff'],
+    '/dashboard/spaces/bookings/[id]': ['admin', 'facility_manager', 'staff'],
+
+    // Supply Requests
+    '/dashboard/supply-requests': ['admin', 'facility_manager', 'cleaning_supervisor'],
+    '/dashboard/supply-requests/new': ['admin', 'facility_manager', 'cleaning_supervisor'],
+    '/dashboard/supply-requests/[id]': ['admin', 'facility_manager', 'cleaning_supervisor'],
+
+    // Consumption
+    '/dashboard/consumption': ['admin', 'facility_manager', 'cleaning_supervisor', 'staff'],
+    '/dashboard/consumption/new': ['admin', 'facility_manager', 'cleaning_supervisor'],
+    '/dashboard/consumption/log': ['admin', 'facility_manager', 'cleaning_supervisor', 'staff'],
+
+    // Expenses
+    '/dashboard/expenses': ['admin', 'facility_manager', 'cleaning_supervisor'],
+    '/dashboard/expenses/new': ['admin', 'facility_manager', 'cleaning_supervisor'],
+    '/dashboard/expenses/[id]': ['admin', 'facility_manager', 'cleaning_supervisor'],
+    '/dashboard/expenses/[id]/edit': ['admin', 'facility_manager'],
+
+    // Reports
+    '/dashboard/reports': ['admin', 'facility_manager'],
+
+    // Settings
+    '/dashboard/settings': ['admin'],
+    '/dashboard/settings/users/new': ['admin'],
+    '/dashboard/settings/areas/new': ['admin'],
+};

@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Package, Search, Clock, Plus } from 'lucide-react';
 import Link from 'next/link';
+import RoleGate from '@/components/auth/RoleGate';
 import { createClient } from '@/lib/supabase/client';
 import StatusBadge from '@/components/ui/StatusBadge';
 import EmptyState from '@/components/ui/EmptyState';
@@ -14,6 +16,7 @@ const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'danger' | 'neutral
 };
 
 export default function SupplyRequestsPage() {
+    const router = useRouter();
     const [requests, setRequests] = useState<SupplyRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -56,9 +59,11 @@ export default function SupplyRequestsPage() {
                     <h1>Supply Requests</h1>
                     <p>Track supply orders and inventory needs</p>
                 </div>
-                <Link href="/dashboard/supply-requests/new" className="btn btn-primary" style={{ textDecoration: 'none' }}>
-                    <Plus style={{ width: 16, height: 16 }} /> New Request
-                </Link>
+                <RoleGate allowedRoles={['admin', 'facility_manager', 'cleaning_supervisor']}>
+                    <Link href="/dashboard/supply-requests/new" className="btn btn-primary" style={{ textDecoration: 'none' }}>
+                        <Plus style={{ width: 16, height: 16 }} /> New Request
+                    </Link>
+                </RoleGate>
             </div>
 
             {/* Search */}
@@ -85,7 +90,7 @@ export default function SupplyRequestsPage() {
             {filtered.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {filtered.map((r) => (
-                        <div key={r.id} className="card card-pad">
+                        <div key={r.id} className="card card-pad" style={{ cursor: 'pointer' }} onClick={() => router.push(`/dashboard/supply-requests/${r.id}`)}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
                                 <div>
                                     <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>

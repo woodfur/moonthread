@@ -56,7 +56,7 @@ export default function NewAreaSettingsPage() {
                     <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>Area Name *</label>
                     <input name="name" required className="input" placeholder="e.g. Conference Room A" />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div className="form-row">
                     <div>
                         <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>Type *</label>
                         <select name="type" required className="input">

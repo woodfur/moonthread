@@ -6,6 +6,7 @@ import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import type { FacilityArea } from '@/types';
+import FormEntrySelector from '@/components/ui/FormEntrySelector';
 
 export default function NewSupplyRequestPage() {
     const router = useRouter();
@@ -13,6 +14,9 @@ export default function NewSupplyRequestPage() {
     const [error, setError] = useState<string | null>(null);
     const [areas, setAreas] = useState<FacilityArea[]>([]);
     const [items, setItems] = useState([{ item_name: '', quantity: 1, unit: 'pieces', notes: '' }]);
+    const [generalNotes, setGeneralNotes] = useState('');
+    const [priority, setPriority] = useState('medium');
+    const [areaOfUse, setAreaOfUse] = useState('');
 
     useEffect(() => {
         const supabase = createClient();
@@ -20,6 +24,26 @@ export default function NewSupplyRequestPage() {
             if (data) setAreas(data as FacilityArea[]);
         });
     }, []);
+
+    // AI data handler — fills items, priority, notes from voice
+    const handleAIData = (data: Record<string, unknown>) => {
+        // Items array from AI
+        if (data.items && Array.isArray(data.items) && data.items.length > 0) {
+            const aiItems = (data.items as Array<Record<string, unknown>>).map(item => ({
+                item_name: (item.item_name as string) || '',
+                quantity: (item.quantity as number) || 1,
+                unit: (item.unit as string) || 'pieces',
+                notes: '',
+            }));
+            setItems(aiItems);
+        }
+        if (data.priority && ['low', 'medium', 'high', 'urgent'].includes(data.priority as string)) {
+            setPriority(data.priority as string);
+        }
+        if (data.notes) {
+            setGeneralNotes(data.notes as string);
+        }
+    };
 
     const addItem = () => setItems([...items, { item_name: '', quantity: 1, unit: 'pieces', notes: '' }]);
     const removeItem = (idx: number) => setItems(items.filter((_, i) => i !== idx));
@@ -34,30 +58,31 @@ export default function NewSupplyRequestPage() {
         setSaving(true);
         setError(null);
 
-        const fd = new FormData(e.currentTarget);
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { setError('Not authenticated'); setSaving(false); return; }
 
         const { data: req, error: reqErr } = await supabase.from('supply_requests').insert({
             submitted_by: user.id,
-            area_of_use: fd.get('area_of_use') as string || null,
-            priority: fd.get('priority') as string,
+            area_of_use: areaOfUse || null,
+            priority,
             status: 'pending',
         }).select().single();
 
         if (reqErr) { setError(reqErr.message); setSaving(false); return; }
 
-        // Insert items
+        // Insert items — append general notes to first item if available
         const validItems = items.filter(i => i.item_name.trim());
         if (validItems.length > 0 && req) {
             const { error: itemsErr } = await supabase.from('supply_request_items').insert(
-                validItems.map(i => ({
+                validItems.map((i, idx) => ({
                     supply_request_id: req.id,
                     item_name: i.item_name,
                     quantity: i.quantity,
                     unit: i.unit,
-                    notes: i.notes || null,
+                    notes: idx === 0 && generalNotes
+                        ? [i.notes, generalNotes].filter(Boolean).join(' — ') || null
+                        : i.notes || null,
                     is_approved: false,
                 }))
             );
@@ -86,21 +111,26 @@ export default function NewSupplyRequestPage() {
                 </div>
             )}
 
+            <FormEntrySelector
+                onFormDataExtracted={handleAIData}
+                formType="supply_request"
+                translateToEnglish={true}
+            >
             <form onSubmit={handleSubmit} className="card card-pad" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div className="form-row">
                     <div>
                         <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>Area of Use</label>
-                        <select name="area_of_use" className="input">
+                        <select value={areaOfUse} onChange={(e) => setAreaOfUse(e.target.value)} className="input">
                             <option value="">Select area…</option>
                             {areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
                         </select>
                     </div>
                     <div>
                         <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>Priority *</label>
-                        <select name="priority" required className="input">
-                            <option value="low">Low</option>
+                        <select value={priority} onChange={(e) => setPriority(e.target.value)} required className="input">
+                            <option value="low">Low Priority</option>
                             <option value="medium">Medium</option>
-                            <option value="high">High</option>
+                            <option value="high">High Priority</option>
                             <option value="urgent">Urgent</option>
                         </select>
                     </div>
@@ -141,6 +171,19 @@ export default function NewSupplyRequestPage() {
                     </div>
                 </div>
 
+                {/* General Notes */}
+                <div>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>Additional Notes</label>
+                    <textarea
+                        value={generalNotes}
+                        onChange={(e) => setGeneralNotes(e.target.value)}
+                        rows={3}
+                        className="input"
+                        placeholder="Any additional context for this request…"
+                        style={{ fontSize: '13px', resize: 'vertical' }}
+                    />
+                </div>
+
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '8px', borderTop: '1px solid var(--border-light)' }}>
                     <Link href="/dashboard/supply-requests" className="btn btn-secondary" style={{ textDecoration: 'none' }}>Cancel</Link>
                     <button type="submit" disabled={saving} className="btn btn-primary">
@@ -148,6 +191,7 @@ export default function NewSupplyRequestPage() {
                     </button>
                 </div>
             </form>
+            </FormEntrySelector>
         </div>
     );
 }

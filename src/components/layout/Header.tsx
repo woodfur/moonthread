@@ -1,9 +1,10 @@
 'use client';
 
-import { Bell, Search, Plus } from 'lucide-react';
+import { Bell, Search, Menu } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { formatRelativeTime } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
+import { useMobileMenu } from '@/app/dashboard/layout';
 import type { Notification } from '@/types';
 
 export default function Header() {
@@ -11,6 +12,7 @@ export default function Header() {
     const [searchQuery, setSearchQuery] = useState('');
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const notifRef = useRef<HTMLDivElement>(null);
+    const { toggle } = useMobileMenu();
 
     useEffect(() => {
         const supabase = createClient();
@@ -40,17 +42,24 @@ export default function Header() {
     }, []);
 
     return (
-        <header style={{
-            height: 'var(--header-height)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            gap: '12px',
-            padding: '0 32px',
-            background: 'transparent',
-        }}>
+        <header className="dashboard-header">
+            {/* Mobile hamburger */}
+            <button
+                className="hamburger-btn"
+                onClick={toggle}
+                aria-label="Toggle menu"
+            >
+                <Menu style={{ width: 22, height: 22 }} />
+            </button>
+
+            {/* Mobile brand */}
+            <span className="mobile-brand">MOONTHREAD</span>
+
+            {/* Spacer pushes items right */}
+            <div style={{ flex: 1 }} />
+
             {/* Search */}
-            <div style={{ position: 'relative' }}>
+            <div className="header-search">
                 <Search style={{
                     position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)',
                     width: 16, height: 16, color: 'var(--text-muted)',
@@ -61,7 +70,7 @@ export default function Header() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="input input-with-icon"
-                    style={{ width: '220px', padding: '8px 14px 8px 38px', fontSize: '13px' }}
+                    style={{ width: '100%', padding: '8px 14px 8px 38px', fontSize: '13px' }}
                 />
             </div>
 
@@ -91,16 +100,7 @@ export default function Header() {
 
                 {/* Dropdown */}
                 {showNotifications && (
-                    <div style={{
-                        position: 'absolute', top: '44px', right: 0,
-                        width: '340px',
-                        background: 'var(--surface)',
-                        border: '1px solid var(--border)',
-                        borderRadius: 'var(--radius-lg)',
-                        boxShadow: 'var(--shadow-lg)',
-                        zIndex: 50,
-                        overflow: 'hidden',
-                    }}>
+                    <div className="notif-dropdown">
                         <div style={{
                             padding: '16px 20px',
                             borderBottom: '1px solid var(--border-light)',

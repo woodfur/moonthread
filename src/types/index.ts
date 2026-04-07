@@ -41,7 +41,7 @@ export type BookingStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
 
 export type SupplyRequestStatus = 'pending' | 'approved' | 'partially_approved' | 'rejected' | 'fulfilled';
 
-export type SupplyPriority = 'routine' | 'urgent';
+export type SupplyPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export type ExpenseCategory =
   | 'maintenance_repairs'
@@ -282,4 +282,38 @@ export interface ActivityItem {
   description: string;
   timestamp: string;
   user?: User;
+}
+
+// --- Consumption Tracking ---
+
+export type ConsumableCategory = 'water' | 'cleaning' | 'office' | 'kitchen' | 'hygiene' | 'other';
+
+export type ConsumptionAction = 'consumed' | 'restocked';
+
+export interface ConsumableItem {
+  id: string;
+  name: string;
+  category: ConsumableCategory;
+  unit: string;
+  current_stock: number;
+  reorder_threshold: number;
+  notes?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConsumptionLog {
+  id: string;
+  item_id: string;
+  logged_by: string;
+  action: ConsumptionAction;
+  quantity: number;
+  area_id?: string;
+  notes?: string;
+  logged_at: string;
+  // Joined fields
+  item?: ConsumableItem;
+  user?: User;
+  area?: FacilityArea;
 }

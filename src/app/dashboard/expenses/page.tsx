@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { DollarSign, Search, TrendingUp, Calendar, Plus } from 'lucide-react';
 import Link from 'next/link';
+import RoleGate from '@/components/auth/RoleGate';
 import { createClient } from '@/lib/supabase/client';
 import StatusBadge from '@/components/ui/StatusBadge';
 import EmptyState from '@/components/ui/EmptyState';
@@ -14,6 +16,7 @@ const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'danger' | 'neutral
 };
 
 export default function ExpensesPage() {
+    const router = useRouter();
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -47,9 +50,11 @@ export default function ExpensesPage() {
                     <h1>Expenses</h1>
                     <p>Track and manage facility expenditures</p>
                 </div>
-                <Link href="/dashboard/expenses/new" className="btn btn-primary" style={{ textDecoration: 'none' }}>
-                    <Plus style={{ width: 16, height: 16 }} /> Add Expense
-                </Link>
+                <RoleGate allowedRoles={['admin', 'facility_manager', 'cleaning_supervisor']}>
+                    <Link href="/dashboard/expenses/new" className="btn btn-primary" style={{ textDecoration: 'none' }}>
+                        <Plus style={{ width: 16, height: 16 }} /> Add Expense
+                    </Link>
+                </RoleGate>
             </div>
 
             {/* Summary */}
@@ -83,11 +88,11 @@ export default function ExpensesPage() {
             {/* Table */}
             <div className="card" style={{ overflow: 'hidden' }}>
                 {filtered.length > 0 ? (
-                    <table className="data-table">
+                    <div className="table-responsive"><table className="data-table">
                         <thead><tr><th>Description</th><th>Category</th><th>Vendor</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
                         <tbody>
                             {filtered.map((e) => (
-                                <tr key={e.id}>
+                                <tr key={e.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/dashboard/expenses/${e.id}`)}>
                                     <td>
                                         <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>{e.description}</div>
                                         <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '1px' }}>by {e.submitter?.full_name}</div>
@@ -100,7 +105,7 @@ export default function ExpensesPage() {
                                 </tr>
                             ))}
                         </tbody>
-                    </table>
+                    </table></div>
                 ) : (
                     <EmptyState title="No expenses found" description="No expenses have been recorded yet." />
                 )}

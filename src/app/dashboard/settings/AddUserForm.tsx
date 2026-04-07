@@ -58,7 +58,7 @@ export default function AddUserForm() {
             </h3>
             {error && <div style={{ padding: '10px 12px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', fontSize: '12px', color: '#DC2626', marginBottom: '12px' }}>{error}</div>}
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="form-row">
                     <div>
                         <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Full Name *</label>
                         <input name="full_name" required className="input" placeholder="John Doe" />
@@ -68,7 +68,7 @@ export default function AddUserForm() {
                         <input name="email" type="email" required className="input" placeholder="john@foundation.org" />
                     </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="form-row">
                     <div>
                         <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Password *</label>
                         <input name="password" type="password" required minLength={6} className="input" placeholder="Min 6 characters" />
